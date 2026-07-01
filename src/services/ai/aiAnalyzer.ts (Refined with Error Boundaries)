@@ -1,0 +1,102 @@
+/**
+ * AI Analysis Orchestrator (Refined)
+ * High-level service that coordinates between quiz scores and the AI engine.
+ * Now includes retry logic, response validation, and graceful degradation.
+ */
+
+import { openRouterService, AIServiceError } from './openRouterService';
+import { generateAnalysisPrompt, DEFAULT_AI_RESULT } from './systemPrompts';
+import { responseParser } from './responseParser';
+import { MentalAgeScoreResult } from '@/utils/calculations';
+import { AIAnalysis } from '@/types';
+import { AppLanguage } from '@/config/appConfig';
+import { sleep } from '@/utils/helpers';
+import { validators } from '@/utils/validators';
+
+const MAX_RETRIES = 2;
+const RETRY_DELAY_MS = 1000;
+
+export const aiAnalyzer = {
+  /**
+   * Orchestrates the complete AI analysis process with retry logic.
+   */
+  async analyzeMentalAge(params: {
+    userName: string;
+    chronologicalAge: number;
+    scoreData: MentalAgeScoreResult;
+    language: AppLanguage;
+    gender?: string;
+  }): Promise<AIAnalysis> {
+    const { userName, chronologicalAge, scoreData, language, gender } = params;
+
+    const prompt = generateAnalysisPrompt({
+      userName,
+      chronologicalAge,
+      scoreData,
+      language,
+      gender,
+    });
+
+    const startTime = Date.now();
+    let lastError: unknown = null;
+
+    for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+      try {
+        const rawAnalysis = await openRouterService.generateAnalysis(prompt);
+
+        // Validate the shape of the returned analysis
+        if (!validators.isValidAnalysis(rawAnalysis)) {
+          throw new AIServiceError('AI response failed schema validation');
+        }
+
+        await this.ensureMinimumThinkingTime(startTime);
+        return rawAnalysis;
+      } catch (error) {
+        lastError = error;
+        console.warn(`AI analysis attempt ${attempt + 1} failed:`, error);
+
+        if (attempt < MAX_RETRIES) {
+          await sleep(RETRY_DELAY_MS * (attempt + 1));
+        }
+      }
+    }
+
+    // All retries exhausted — use safety fallback
+    console.error('AI Analysis Failed after retries:', lastError);
+    await this.ensureMinimumThinkingTime(startTime);
+
+    return {
+      ...DEFAULT_AI_RESULT,
+      brainType: this.getBrainTypeFromScore(scoreData.mentalAgeScore),
+    };
+  },
+
+  /**
+   * Ensures the "thinking" animation shows for at least 2 seconds
+   * regardless of how fast/slow the API responds.
+   */
+  async ensureMinimumThinkingTime(startTime: number, minMs: number = 2000): Promise<void> {
+    const elapsed = Date.now() - startTime;
+    if (elapsed < minMs) {
+      await sleep(minMs - elapsed);
+    }
+  },
+
+  /**
+   * Attempts to parse a raw string response (used if the SDK returns raw text).
+   */
+  parseRawResponse(raw: string): AIAnalysis | null {
+    return responseParser.parseAnalysis(raw);
+  },
+
+  /**
+   * Helper to provide a consistent Brain Type title for fallback scenarios.
+   */
+  getBrainTypeFromScore(score: number): string {
+    if (score < 18) return 'The Boundless Dreamer';
+    if (score < 25) return 'The Spirited Adventurer';
+    if (score < 35) return 'The Mindful Modernist';
+    if (score < 45) return 'The Wise Architect';
+    return 'The Timeless Sage';
+  },
+};
