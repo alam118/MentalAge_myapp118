@@ -1,0 +1,46 @@
+/**
+ * App Context Orchestrator (Updated)
+ * Combines all providers into a single Master Provider.
+ * Added AdsProvider and UIProvider to the architectural tree.
+ */
+
+import React, { ReactNode } from 'react';
+import { LanguageProvider } from './LanguageContext';
+import { ThemeProvider } from './ThemeContext';
+import { UserProvider } from './UserContext';
+import { QuizProvider } from './QuizContext';
+import { AdsProvider } from './AdsContext';
+import { UIProvider } from './UIContext';
+
+interface AppProviderProps {
+  children: ReactNode;
+}
+
+/**
+ * Provider Order:
+ * 1. Theme (Base Styles)
+ * 2. Language (Translations)
+ * 3. Ads (Monetization status)
+ * 4. UI (Snackbars/Modals - depends on Theme/Lang)
+ * 5. User (Profile - depends on Lang)
+ * 6. Quiz (Logic - depends on User)
+ */
+export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
+  return (
+    <ThemeProvider>
+      <LanguageProvider>
+        <AdsProvider>
+          <UIProvider>
+            <UserProvider>
+              <QuizProvider>
+                {children}
+              </QuizProvider>
+            </UserProvider>
+          </UIProvider>
+        </AdsProvider>
+      </LanguageProvider>
+    </ThemeProvider>
+  );
+};
+
+export default AppProvider;
