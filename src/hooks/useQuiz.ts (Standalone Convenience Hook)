@@ -1,0 +1,44 @@
+/**
+ * useQuiz Hook
+ * Standalone convenience hook that provides a simplified interface 
+ * for interacting with the Quiz Context and Engine.
+ */
+
+import { useQuiz as useQuizCtx } from '@/context/QuizContext';
+import { quizEngine } from '@/services/quiz/quizEngine';
+import { useCallback, useMemo } from 'react';
+
+export const useQuiz = () => {
+  const ctx = useQuizCtx();
+
+  // Calculated helper to see if the current question is the last one
+  const isLastQuestion = useMemo(() => {
+    if (!ctx.session) return false;
+    return ctx.session.currentIndex === ctx.session.questions.length - 1;
+  }, [ctx.session]);
+
+  // Current percentage progress
+  const progressPercent = useMemo(() => {
+    if (!ctx.session) return 0;
+    return quizEngine.getProgress(ctx.session);
+  }, [ctx.session]);
+
+  // Check if current question has an answer
+  const canGoNext = useMemo(() => {
+    if (!ctx.session) return false;
+    return quizEngine.hasAnsweredCurrent(ctx.session);
+  }, [ctx.session]);
+
+  const getCurrentQuestion = useCallback(() => {
+    if (!ctx.session) return null;
+    return quizEngine.getCurrentQuestion(ctx.session);
+  }, [ctx.session]);
+
+  return {
+    ...ctx,
+    isLastQuestion,
+    progressPercent,
+    canGoNext,
+    currentQuestion: getCurrentQuestion(),
+  };
+};
