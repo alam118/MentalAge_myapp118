@@ -1,0 +1,16 @@
+# 🧠 Mental Age Test - Robots Configuration
+# www.robotstxt.org/
+
+# Allow all search engines to crawl our landing and results
+User-agent: *
+Allow: /
+Allow: /results/
+Allow: /onboarding
+
+# Prevent crawling of internal history or specific user settings
+Disallow: /history
+Disallow: /settings
+Disallow: /profile-setup
+
+# Sitemap location (Update with your actual domain in production)
+Sitemap: https://mental-age-test.app/sitemap.xml
