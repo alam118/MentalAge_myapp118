@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json" />
+    
+    <!-- Mobile-First Viewport Configuration (Prevents pinch-to-zoom for native feel) -->
+    <meta 
+      name="viewport" 
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" 
+    />
+    
+    <!-- Theme Colors matching Dark Navy background -->
+    <meta name="theme-color" content="#0A0F24" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    
+    <!-- SEO & Metadata -->
+    <meta name="description" content="Discover your true mental age and personality type with our AI-powered analyzer." />
+    <meta name="keywords" content="mental age, personality test, AI test, brain age, psychology test" />
+    <title>Mental Age Test | AI Personality Analyzer</title>
+
+    <!-- Modern Sans-Serif Fonts (Outfit for headings, Inter for body) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet" />
+
+    <!-- Default styling to prevent FOUC (Flash of Unstyled Content) before React mounts -->
+    <style>
+      body, html {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        background-color: #0A0F24;
+        color: #FFFFFF;
+        font-family: 'Inter', sans-serif;
+        overflow-x: hidden;
+      }
+      #root {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
